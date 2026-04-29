@@ -108,7 +108,7 @@ class VideoIndexerService:
             logger.info(f"Current processing state: {video_state}")
             if video_state == 'Processed':
                 processing = False
-                logger.info(f'The video index has completed. Here is the full JSON of the index for video ID {video_id}: \n{response.json()}')
+                logger.info(f'The video index has completed. Extracting insights now.')
                 return response.json()
             elif video_state == 'Failed':
                 processing = False
@@ -131,7 +131,7 @@ class VideoIndexerService:
         for v in vi_json.get("videos", []):
             for insights in v.get("insights", {}).get("ocr", []):
                 ocr_texts.append(insights.get("text", ""))
-        return {"transcript_lines": transcript_lines,
+        return {"transcripts": transcript_lines,
                 "ocr_text": ocr_texts,
                 "video_meta_data": {
                     "duration": vi_json.get("summarizedInsights", {}).get("duration", 0),

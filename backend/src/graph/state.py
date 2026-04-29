@@ -20,7 +20,7 @@ class VideoAuditState(TypedDict):
     # Ingestion and extraction details
     local_file_path: Optional[str]
     video_metadata: Optional[dict] # e.g., duration, resolution, format
-    transcript: Optional[str] # speech to text transcription of the video
+    transcripts: Optional[str] # speech to text transcription of the video
     ocr_text: List[str] # text extracted from video frames using OCR
 
     # compliance result

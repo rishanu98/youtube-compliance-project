@@ -20,19 +20,19 @@ def index_document() -> dict:
     current_dir = os.path.dirname(os.path.abspath(__file__))  # Example file path, adjust as needed
     folder_path = os.path.join(current_dir,'../data/documents')
     logger.info("="*60)
-    logger.info(f'AZURE_OPENAI_API_KEY:{os.getenv("OPENAI_API_KEY")}')
-    logger.info(f'AZURE_OPENAI_ENDPOINT:{os.getenv("OPENAI_ENDPOINT")}')
+    logger.info(f'AZURE_OPENAI_API_KEY:{os.getenv("AZURE_OPENAI_API_KEY")}')
+    logger.info(f'AZURE_OPENAI_ENDPOINT:{os.getenv("AZURE_OPENAI_ENDPOINT")}')
     logger.info(f'Embedding deployment model:{os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME")}')
     logger.info(f'AZURE_SEARCH_INDEX_NAME:{os.getenv("AZURE_SEARCH_INDEX_NAME")}')
-    logger.info(f'AZURE_OPENAI_VERSION:{os.getenv("OPENAI_API_VERSION")}')
+    logger.info(f'AZURE_OPENAI_API_VERSION:{os.getenv("AZURE_OPENAI_API_VERSION")}')
 
     # validate the required environment variables
     required_env_vars = [
-        "OPENAI_API_KEY",
-        "OPENAI_ENDPOINT",
+        "AZURE_OPENAI_API_KEY",
+        "AZURE_OPENAI_ENDPOINT",
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
         "AZURE_SEARCH_INDEX_NAME",
-        "OPENAI_API_VERSION"
+        "AZURE_OPENAI_API_VERSION"
     ]
 
     missing_var = [var for var in required_env_vars if not os.getenv(var)]
@@ -45,9 +45,9 @@ def index_document() -> dict:
     try:
         embedding: AzureOpenAIEmbeddings  = AzureOpenAIEmbeddings(
             azure_deployment=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            azure_endpoint=os.getenv("OPENAI_ENDPOINT"),
-            openai_api_version=os.getenv("OPENAI_API_VERSION"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            openai_api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
         )
 
         logger.info("Azure OpenAI Embeddings initialized successfully.")
@@ -59,9 +59,8 @@ def index_document() -> dict:
         vector_store: AzureSearch = AzureSearch(
                                    azure_search_endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
                                    index_name=index_name,
-                                   azure_search_key=os.getenv("AZURE_SEARCH_ADMIN_KEY"),
-                                   embedding=embedding.embed_query,
-                                   additional_search_client_options={"retry_total": 4}
+                                   azure_search_api_key=os.getenv("AZURE_SEARCH_ADMIN_KEY"),
+                                   embedding_function=embedding.embed_query
                                    )
         pdf_files = glob.glob(os.path.join(folder_path, "*.pdf"))
 

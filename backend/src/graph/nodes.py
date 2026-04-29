@@ -14,7 +14,7 @@ from backend.src.services.video_indexer import VideoIndexerService
 
 # configure the logger
 logger = logging.getLogger("compliance_qa_pipeline")
-logger.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 #NODE 
 def index_video(state:VideoAuditState) -> str:
@@ -69,7 +69,7 @@ def compliance_check(state:VideoAuditState) -> Dict[str, Any]:
     Performs Retrivel Augemented Generation (RAG) to check for compliance issues in the video based on the extracted insights and a predefined set of compliance rules.
     '''
     logger.info(f"Starting compliance check for video ID: {state['video_id']}")
-    transcript = state.get("transcript", "")
+    transcript = state.get("transcripts", "")
     if not transcript:
         logger.warning("No transcript available for compliance check.")
         return {
@@ -78,20 +78,20 @@ def compliance_check(state:VideoAuditState) -> Dict[str, Any]:
             "final_report": "No transcript available for analysis."
         }
     llm = AzureChatOpenAI(
-        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-        azure_api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+        azure_deployment=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
         temperature=0.0
         )
     embedding=AzureOpenAIEmbeddings(
-            azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-            azure_api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+            azure_deployment=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
         )
     
     vector_store = AzureSearch(
-        azure_endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
-        azure_key=os.getenv("AZURE_SEARCH_KEY"),
-        azure_index=os.getenv("AZURE_SEARCH_INDEX"),
-        embedding=embedding.embed_query
+        azure_search_endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
+        azure_search_key=os.getenv("AZURE_SEARCH_API_KEY"),
+        index_name=os.getenv("AZURE_SEARCH_INDEX_NAME"),
+        embedding_function=embedding.embed_query
     )   
 
     ocr_text = state.get("ocr_text", [])
@@ -130,7 +130,7 @@ def compliance_check(state:VideoAuditState) -> Dict[str, Any]:
     user_message = f"""
     VIDEO_METADATA: {state.get("video_metadata", {})}
     Transcript: {transcript}
-    ON-SCREEN TEXT: (ocr_text)
+    ON-SCREEN TEXT: {ocr_text}
     """
 
     try:
